@@ -7,6 +7,9 @@
   "scripts": {
     "dev": "node esbuild.config.mjs",
     "build": "rollup -c",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "ci": "npm run lint && npm test && npm run build",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
     "test": "jest"
   },
@@ -49,11 +52,11 @@
     "builtin-modules": "5.0.0",
     "electron": "^37.3.0",
     "eslint": "^9.33.0",
+    "eslint-plugin-obsidianmd": "^0.2.9",
     "globals": "^16.3.0",
     "jest": "^30.0.0",
     "obsidian": "^1.8.7",
     "rollup": "^4.46.0",
-    "rollup-plugin-typescript2": "^0.36.0",
     "rollup-plugin-web-worker-loader": "^1.7.0",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
@@ -62,11 +65,13 @@
     "typescript-eslint": "^8.39.1"
   },
   "dependencies": {
+    "@lezer/common": "^1.5.2",
     "jsonpath-plus": "^10.1.0",
     "mdast-util-from-markdown": "^2.0.2",
     "mdast-util-frontmatter": "^2.0.1",
     "mdast-util-gfm": "^3.1.0",
     "micromark-extension-frontmatter": "^2.0.0",
-    "micromark-extension-gfm": "^3.0.0"
+    "micromark-extension-gfm": "^3.0.0",
+    "micromark-util-types": "^2.0.2"
   }
 }

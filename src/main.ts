@@ -107,7 +107,7 @@ export default class LanguageToolPlugin extends Plugin {
             editorCallback: (editor, view) => {
                 // @ts-expect-error, not typed
                 const editorView = editor.cm as EditorView;
-                this.runDetection(editorView)
+                void this.runDetection(editorView)
                     .catch(e => console.error(e))
                     .then(suggestions => {
                         if (!suggestions) new Notice("No suggestions found.");
@@ -376,7 +376,7 @@ export default class LanguageToolPlugin extends Plugin {
             editorView.state.selection.main.from,
             editorView.state.selection.main.to,
         );
-        if (word.match(/[\s\.]/)) return false;
+        if (word.match(/[\s.]/)) return false;
 
         if (checking) return true;
 
@@ -411,7 +411,7 @@ export default class LanguageToolPlugin extends Plugin {
             )
             .catch(e => {
                 console.error(e);
-                this.pushLogs(e);
+                void this.pushLogs(e);
                 new Notice(e.message, 30000);
             });
         return true;
@@ -545,7 +545,7 @@ export default class LanguageToolPlugin extends Plugin {
         } catch (e) {
             console.error(e);
             if (e instanceof Error) {
-                this.pushLogs(e);
+                void this.pushLogs(e);
                 if (!auto) new Notice(e.message, 30000);
             }
             if (auto) throw e; // re-throw for auto-checks
@@ -653,7 +653,7 @@ export default class LanguageToolPlugin extends Plugin {
             const dictionary = [...words].sort(cmpIgnoreCase);
             await this.settings.update({ dictionary, remoteDictionary: dictionary });
         } catch (e) {
-            this.pushLogs(e);
+            void this.pushLogs(e);
             new Notice(e.message, 30000);
             console.error("Failed sync spellcheck with LanguageTool", e);
         }

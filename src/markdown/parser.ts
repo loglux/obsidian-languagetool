@@ -11,7 +11,7 @@ import { wikiLink } from "./micromark-wikilink";
 import { wikiLinkFromMarkdown } from "./mdast-wikilink";
 import * as api from "../api";
 
-const ESCAPE = /\\[!"#$%&'()*+,\-.\/:;<=>?@\[\\\]^_`{|}~]/g;
+const ESCAPE = /\\[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/g;
 
 export async function parseAndAnnotate(
     text: string,
