@@ -3,8 +3,15 @@ name: CI
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
+  # ─────────────────────────────────────────────────────────────────────
+  # Pull-request gating is disabled by default because this repository has
+  # a single maintainer and PRs to self add no review value. Re-enable the
+  # block below if external contributors join and need their PRs gated by
+  # CI before merge:
+  #
+  # pull_request:
+  #   branches: [master]
+  # ─────────────────────────────────────────────────────────────────────
 
 jobs:
   build-test:
