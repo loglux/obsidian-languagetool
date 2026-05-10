@@ -1,15 +1,27 @@
-# Obsidian LanguageTool Plugin
+# Obsidian LanguageTool Plugin (loglux fork)
 
-This plugin for [Obsidian.md](https://obsidian.md) integrates [LanguageTool](https://languagetool.org/) to provide advanced grammar and spellchecking.
+This plugin for [Obsidian.md](https://obsidian.md) integrates [LanguageTool](https://languagetool.org/) (or any LanguageTool-compatible API) to provide advanced grammar and spell-checking.
 
 <img src="demos/image.png" style="border:1px solid black" />
 
-> This is a fork of the original [obsidian-languagetool-plugin](https://github.com/Clemens-E/obsidian-languagetool-plugin), with the following changes:
+> **Lineage**
+>
+> This repository is a fork of [`wrenger/obsidian-languagetool`](https://github.com/wrenger/obsidian-languagetool), which is itself a fork of the original [`Clemens-E/obsidian-languagetool-plugin`](https://github.com/Clemens-E/obsidian-languagetool-plugin) (in maintenance mode).
+>
+> The wrenger fork adds (over the original):
 >
 > - Support for synonyms and mother tongue
 > - Tooltip button for disabling rules
 > - Note-specific settings
 > - Clean up the codebase, and fix multiple bugs and freezes
+>
+> This fork (`loglux/obsidian-languagetool`) further adds:
+>
+> - **Race-condition fix in auto-check**: drop stale LT responses when the document was edited mid-flight (the long-standing "underlines may not move correctly" issue in `editor/autoCheck.ts`). Covered by unit tests in `src/test/race-guard.test.ts`.
+> - **Bug fix in tooltip**: predicate parameter shadowed the outer `match`, so *Add to dictionary* cleared every underline with text instead of just the matching word.
+> - **Strict linting** with the official [`eslint-plugin-obsidianmd`](https://github.com/obsidianmd/eslint-plugin) + type-aware `typescript-eslint` rules; fixed 8 floating promises and several useless-escape regex warnings.
+> - **GitHub Actions CI** (lint + test + build on Node 20.x and 22.x).
+> - Migrated tooling to npm + `@rollup/plugin-typescript` (yarn 1 + `rollup-plugin-typescript2` were unstable under the current dep tree).
 
 **Note:** if you are worried about the privacy of your notes, you should self-host LanguageTool locally on your PC or on a server.
 If you decide to self-host the service, you must change the link in the configuration accordingly.
@@ -69,5 +81,18 @@ Configure your email, API key, and the new URL (https://api.languagetoolplus.com
 
 ## Manually Installing the Plugin
 
-- Run `yarn install` and `yarn build` in the root directory of the repository.
-- Copy over `main.js`, `styles.css`, `manifest.json` from the latest release to your vault `VaultFolder/.obsidian/plugins/languagetool/`.
+- Run `npm install --legacy-peer-deps` and `npm run build` in the root directory of the repository.
+- Copy `main.js`, `styles.css`, `manifest.json` from the latest release to your vault: `VaultFolder/.obsidian/plugins/languagetool/`.
+
+## Development
+
+```bash
+npm install --legacy-peer-deps
+npm run lint        # eslint with eslint-plugin-obsidianmd
+npm run lint:fix    # auto-fix lint issues
+npm test            # jest, currently 40 tests
+npm run build       # rollup, produces main.js
+npm run ci          # lint + test + build (used by CI)
+```
+
+CI runs on every push to master and every PR via [`.github/workflows/ci.yml`](./.github/workflows/ci.yml).
