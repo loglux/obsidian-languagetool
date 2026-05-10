@@ -43,7 +43,7 @@ function createTooltip(
                     button.createSpan({ text: "Add to dictionary" });
                     button.onclick = async () => {
                         // Add to global dictionary
-                        let dictionary = [...plugin.settings.options.dictionary, match.text.trim()];
+                        const dictionary = [...plugin.settings.options.dictionary, match.text.trim()];
                         await plugin.settings.update({ dictionary });
                         // Remove other underlines with the same word
                         view.dispatch({
@@ -104,9 +104,9 @@ function lintTooltip(plugin: LanguageToolPlugin, view: EditorView, pos: number, 
     const underlines = state.field(underlineDecoration);
     if (underlines.size === 0 || state.selection.ranges.length > 1) return null;
 
-    let cursor = underlines.iter(pos);
+    const cursor = underlines.iter(pos);
     if (cursor.value != null && cursor.from <= pos && cursor.to >= pos) {
-        let match = cursor.value.spec.underline as api.LTMatch;
+        const match = cursor.value.spec.underline as api.LTMatch;
         return {
             pos: cursor.from,
             end: cursor.to,

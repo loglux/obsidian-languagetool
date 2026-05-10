@@ -8,7 +8,7 @@ export function autoCheckListener(plugin: LanguageToolPlugin): Extension {
     let range = { from: Infinity, to: -Infinity };
 
     return EditorView.updateListener.of(update => {
-        let settings = plugin.getActiveFileSettings();
+        const settings = plugin.getActiveFileSettings();
         if (!update.docChanged || !settings.shouldAutoCheck) return;
 
         // Currently we have the issue that underlines sometimes do not move correctly
