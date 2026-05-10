@@ -212,7 +212,7 @@ function addText(text: string, output: AnnotatedText) {
 
 function addLines(text: string, parsed: string, output: AnnotatedText) {
     const [first, ...reminder] = text.replace(/\n$/, "").split("\n");
-    const [pfirst, ...premider] = parsed.replace(/\n$/, "").split("\n");
+    const [, ...premider] = parsed.replace(/\n$/, "").split("\n");
 
     if (reminder.length !== premider.length) {
         console.error("Invalid number of lines", reminder.length, premider.length, text, parsed);
@@ -226,7 +226,7 @@ function addLines(text: string, parsed: string, output: AnnotatedText) {
         const pline = premider[i];
 
         let indent = line.length - pline.length;
-        for (const m of line.matchAll(ESCAPE)) {
+        for (const _ of line.matchAll(ESCAPE)) {
             indent -= 1; // each escape character is one longer
         }
         if (indent < 0) {

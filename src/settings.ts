@@ -164,8 +164,9 @@ export class LTSettingsTab extends PluginSettingTab {
     public constructor(app: App, plugin: LanguageToolPlugin) {
         super(app, plugin);
         if (requireApiVersion("1.11.0")) {
-            let tab = this as any;
-            tab.icon = "spell-check";
+            // Obsidian 1.11+ added .icon on SettingTab; type defs lag.
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any).icon = "spell-check";
         }
         this.plugin = plugin;
     }

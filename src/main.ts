@@ -88,7 +88,8 @@ export default class LanguageToolPlugin extends Plugin {
         };
         try {
             // WARNING: Internal API
-            let typeManager = (this.app as any).metadataTypeManager;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const typeManager = (this.app as any).metadataTypeManager;
             for (const [key, type] of Object.entries(properties)) {
                 if (inject) typeManager.setType(key, type);
                 else typeManager.unsetType(key);
@@ -285,7 +286,7 @@ export default class LanguageToolPlugin extends Plugin {
     ): void {
         if (match.message || match.title) {
             submenu.addItem(item => {
-                let title = new DocumentFragment();
+                const title = new DocumentFragment();
                 title.appendChild(
                     createDiv({ cls: "lt-menu-info" }, header => {
                         if (match.title)
@@ -319,7 +320,7 @@ export default class LanguageToolPlugin extends Plugin {
                 subItem.setTitle("Add to dictionary");
                 subItem.setIcon("plus-with-circle");
                 subItem.onClick(async () => {
-                    let dict = [...this.settings.options.dictionary, match.text.trim()];
+                    const dict = [...this.settings.options.dictionary, match.text.trim()];
                     dict.sort(cmpIgnoreCase);
                     await this.settings.update({ dictionary: dict });
                     await this.syncDictionary();
@@ -490,7 +491,7 @@ export default class LanguageToolPlugin extends Plugin {
             const disabledCategories = cache.frontmatter["lt-disabledCategories"];
 
             // Beware: shallow clone
-            let settings = { ...this.settings.options };
+            const settings = { ...this.settings.options };
             if (typeof language === "string") settings.staticLanguage = language;
             if (typeof autoCheck === "boolean") settings.shouldAutoCheck = autoCheck;
             if (typeof picky === "boolean") settings.pickyMode = picky;
@@ -512,7 +513,7 @@ export default class LanguageToolPlugin extends Plugin {
         auto: boolean = false,
         range?: api.LTRange,
     ): Promise<boolean> {
-        let settings = this.getActiveFileSettings();
+        const settings = this.getActiveFileSettings();
 
         const selection = editor.state.selection.main;
         if (!range && !selection.empty) range = { ...selection };
@@ -525,7 +526,9 @@ export default class LanguageToolPlugin extends Plugin {
         try {
             this.setStatusBarWorking();
 
-            let { offset, annotations } = await markdown.parseAndAnnotate(text, range);
+            // `annotations` is never reassigned; `offset` is mutated by `optimize()` below.
+            const { offset: initialOffset, annotations } = await markdown.parseAndAnnotate(text, range);
+            let offset = initialOffset;
             // reduce request size
             offset += annotations.optimize();
             if (annotations.length() === 0) return false;
@@ -558,6 +561,7 @@ export default class LanguageToolPlugin extends Plugin {
             return false;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effects: StateEffect<any>[] = [];
 
         // remove previous underlines
@@ -646,7 +650,7 @@ export default class LanguageToolPlugin extends Plugin {
 
             // merge remaining words
             const words = setUnion(remoteWords, localWords);
-            let dictionary = [...words].sort(cmpIgnoreCase);
+            const dictionary = [...words].sort(cmpIgnoreCase);
             await this.settings.update({ dictionary, remoteDictionary: dictionary });
         } catch (e) {
             this.pushLogs(e);
