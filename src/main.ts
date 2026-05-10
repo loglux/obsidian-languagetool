@@ -4,6 +4,7 @@ import { ChangeSpec, StateEffect } from "@codemirror/state";
 import { endpointFromUrl, LTOptions, LTSettings, LTSettingsTab, SUGGESTIONS } from "./settings";
 import * as api from "api";
 import { underlineExtension } from "./editor/extension";
+import { isResponseStale } from "./editor/race-guard";
 import { addUnderline, clearAllUnderlines, clearMatchingUnderlines, clearUnderlinesInRange, underlineDecoration } from "./editor/underlines";
 import { cmpIgnoreCase, setDifference, setIntersect, setUnion } from "./helpers";
 import * as markdown from "./markdown/parser";
@@ -549,6 +550,12 @@ export default class LanguageToolPlugin extends Plugin {
         } finally {
             this.setStatusBarReady();
             if (longNotice) longNotice.hide();
+        }
+
+        // Race-condition guard: see editor/race-guard.ts for context.
+        if (isResponseStale(editor, text)) {
+            console.debug("Dropping stale check: document changed during request");
+            return false;
         }
 
         const effects: StateEffect<any>[] = [];

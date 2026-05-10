@@ -5,3 +5,4 @@ data.json
 .vscode/
 .zed/
 resources/
+/package-lock.json
