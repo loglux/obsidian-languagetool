@@ -33,7 +33,7 @@
     "@babel/core": "^7.27.4",
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-typescript": "^7.27.1",
-    "@codemirror/language": "https://github.com/lishid/cm-language",
+    "@codemirror/language": "https://github.com/lishid/cm-language#2d416d7835867d1b1e8d0e726b147fc1135c9f92",
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.37.1",
     "@jest/globals": "^30.0.0",
