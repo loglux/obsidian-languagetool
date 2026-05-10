@@ -20,7 +20,9 @@ export function autoCheckListener(plugin: LanguageToolPlugin): Extension {
         });
 
         const view = update.view;
-        clearTimeout(debounceTimer);
+        activeWindow.clearTimeout(debounceTimer);
+        // TODO: refactor to non-async setTimeout cb (try/catch already handles errors).
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         debounceTimer = window.setTimeout(async () => {
             try {
                 await plugin.runDetection(view, true, range);

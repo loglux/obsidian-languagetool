@@ -45,10 +45,16 @@ function createTooltip(
                         // Add to global dictionary
                         const dictionary = [...plugin.settings.options.dictionary, match.text.trim()];
                         await plugin.settings.update({ dictionary });
-                        // Remove other underlines with the same word
+                        // Remove other underlines with the same word.
+                        // Bug fix: predicate parameter was named `match`, which
+                        // shadowed the outer `match` and made the comparison
+                        // `match.text === match.text` (always true) — clearing
+                        // every underline. Rename the param so the predicate
+                        // actually compares against the clicked match.
+                        const word = match.text;
                         view.dispatch({
                             effects: [
-                                clearMatchingUnderlines.of(match => match.text === match.text),
+                                clearMatchingUnderlines.of(other => other.text === word),
                             ],
                         });
                     };
@@ -84,7 +90,7 @@ function createTooltip(
                 container.createDiv({ cls: "lt-info-button clickable-icon" }, button => {
                     setIcon(button, "info");
                     button.onclick = () => {
-                        const popup = document.getElementsByClassName("lt-info-box").item(0);
+                        const popup = activeDocument.getElementsByClassName("lt-info-box").item(0);
                         if (popup) popup.toggleAttribute("hidden");
                     };
                 });

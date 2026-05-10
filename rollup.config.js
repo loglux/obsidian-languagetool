@@ -1,7 +1,7 @@
 import nodeResolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import webWorker from "rollup-plugin-web-worker-loader";
-import typescript2 from "rollup-plugin-typescript2";
+import typescript from "@rollup/plugin-typescript";
 import builtins from "builtin-modules";
 import terser from "@rollup/plugin-terser";
 
@@ -45,7 +45,7 @@ export default {
         banner: `/* Obsidian LanguageTool v${version} */`,
     },
     plugins: [
-        typescript2(),
+        typescript(),
         nodeResolve({ browser: true }),
         commonjs(),
         webWorker({ inline: true, forceInline: true, targetPlatform: "browser" }),

@@ -217,6 +217,8 @@ export class LTSettingsTab extends PluginSettingTab {
         });
     }
 
+    // TODO: PluginSettingTab.display() is sync; refactor to wrap async work in IIFE.
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     public async display(): Promise<void> {
         const { containerEl } = this;
         containerEl.empty();
@@ -283,7 +285,7 @@ export class LTSettingsTab extends PluginSettingTab {
                                     .setDisabled(value !== "custom");
 
                             if (autoCheckDelaySlider)
-                                this.configureCheckDelay(autoCheckDelaySlider, endpoint);
+                                void this.configureCheckDelay(autoCheckDelaySlider, endpoint);
 
                             await this.notifyEndpointChange(settings.options);
                         });
@@ -305,6 +307,8 @@ export class LTSettingsTab extends PluginSettingTab {
                             }
 
                             if (endpointTimer) window.clearTimeout(endpointTimer);
+                            // TODO: refactor to non-async setTimeout cb (try/catch handles errors).
+                            // eslint-disable-next-line @typescript-eslint/no-misused-promises
                             endpointTimer = window.setTimeout(async () => {
                                 try {
                                     await this.notifyEndpointChange(settings.options);
@@ -371,7 +375,7 @@ export class LTSettingsTab extends PluginSettingTab {
             .addSlider(component => {
                 autoCheckDelaySlider = component;
 
-                this.configureCheckDelay(component, endpoint);
+                void this.configureCheckDelay(component, endpoint);
                 component
                     .setValue(settings.options.autoCheckDelay)
                     .onChange(async value => {
@@ -478,8 +482,8 @@ export class LTSettingsTab extends PluginSettingTab {
         for (const [id, lang] of Object.entries(langVariants)) {
             new Setting(containerEl)
                 .setName(`Interpret ${lang} as`)
-                .addDropdown(async component => {
-                    this.configureLanguageVariants(component, id);
+                .addDropdown(component => {
+                    void this.configureLanguageVariants(component, id);
                 });
         }
 
@@ -676,7 +680,7 @@ export class DictionaryModal extends Modal {
             },
         );
 
-        this.plugin.syncDictionary().then(() => {
+        void this.plugin.syncDictionary().then(() => {
             this.words = this.plugin.settings.options.dictionary;
             if (buttonContainer) createButtons(buttonContainer);
         });
@@ -712,6 +716,8 @@ export class DictionaryModal extends Modal {
             });
     }
 
+    // TODO: Modal.onClose is sync in Obsidian types; refactor to wrap async work in IIFE.
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     async onClose() {
         this.contentEl.empty();
         await this.plugin.settings.update({ dictionary: this.words });
