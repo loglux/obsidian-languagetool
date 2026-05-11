@@ -514,15 +514,13 @@ export default class LanguageToolPlugin extends Plugin {
     ): Promise<boolean> {
         const settings = this.getActiveFileSettings();
 
-        const selection = editor.state.selection.main;
+        const state = editor.state;
+        const selection = state.selection.main;
         if (!range && !selection.empty) range = { ...selection };
 
-        const text = editor.state.sliceDoc();
+        const currentDoc = state.doc;
+        const text = state.sliceDoc();
         if (!text.trim()) return false;
-        // Snapshot the immutable doc Text. After the async API call we compare
-        // by reference: CodeMirror creates a new Text object on every edit, so
-        // an unchanged reference is an O(1) "doc didn't change" proof.
-        const snapshotDoc = editor.state.doc;
 
         let matches: (api.LTMatch & { range: api.LTRange })[];
         let longNotice: Notice | undefined = undefined;
@@ -558,13 +556,10 @@ export default class LanguageToolPlugin extends Plugin {
             if (longNotice) longNotice.hide();
         }
 
-        // Race-condition guard: if the immutable Text reference changed during
-        // the in-flight check, the document was edited and our match offsets
-        // are stale. The auto-check listener will schedule a fresh run.
-        if (editor.state.doc !== snapshotDoc) {
-            console.debug("Dropping stale check: document changed during request");
-            return false;
-        }
+        // Avoid updating the underlines if the document has changed.
+        // CodeMirror state is immutable, so reference equality on Text is
+        // enough; the auto-check listener will schedule a fresh run.
+        if (currentDoc !== editor.state.doc) return true;
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effects: StateEffect<any>[] = [];
