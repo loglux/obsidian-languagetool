@@ -1,18 +1,22 @@
 import { describe, expect, test } from "@jest/globals";
-import { parseAndAnnotate } from "../markdown/parser";
+import { SyntaxTree } from "../markdown/parser";
 import { readdirSync, readFileSync } from "node:fs";
 
+function parse(text: string) {
+    return new SyntaxTree(text).annotate(undefined);
+}
+
 describe("markdown parsing", () => {
-    test("hello world", async () => {
+    test("hello world", () => {
         const input = "Hello world";
-        const { annotations } = await parseAndAnnotate(input, undefined); // offset unused
+        const { annotations } = parse(input);
         expect(annotations.length()).toBe(input.length);
         expect(annotations.annotations[0]).toStrictEqual({ text: input });
     });
 
-    test("wiki link", async () => {
+    test("wiki link", () => {
         const input = "Hello [[World]]!";
-        const { annotations } = await parseAndAnnotate(input, undefined); // offset unused
+        const { annotations } = parse(input);
         expect(annotations.length()).toBe(input.length);
         expect(annotations.annotations[0]).toStrictEqual({ text: "Hello " });
         expect(annotations.annotations[1]).toStrictEqual({ markup: "  ", interpretAs: undefined });
@@ -21,9 +25,9 @@ describe("markdown parsing", () => {
         expect(annotations.annotations[4]).toStrictEqual({ text: "!" });
     });
 
-    test("wiki link with alias", async () => {
+    test("wiki link with alias", () => {
         const input = "Hello [[World|alias]]!";
-        const { annotations } = await parseAndAnnotate(input, undefined); // offset unused
+        const { annotations } = parse(input);
         console.info("annotations", annotations.annotations);
         expect(annotations.length()).toBe(input.length);
         expect(annotations.annotations[0]).toStrictEqual({ text: "Hello " });
@@ -36,22 +40,22 @@ describe("markdown parsing", () => {
         expect(annotations.annotations[4]).toStrictEqual({ text: "!" });
     });
 
-    test("len error", async () => {
+    test("len error", () => {
         const input = `
 - EML attached
     - Here are some examples:
       Just padding text
       [[Here is some link]]
 `;
-        const { offset, annotations } = await parseAndAnnotate(input, undefined);
+        const { offset, annotations } = parse(input);
         console.info("Offset", offset);
         console.info("Annotations", annotations.annotations);
         expect(annotations.length()).toBe(input.trimEnd().length);
     });
 
-    test("simple escape", async () => {
+    test("simple escape", () => {
         const input = `Hello \\\\world`;
-        const { offset, annotations } = await parseAndAnnotate(input, undefined);
+        const { offset, annotations } = parse(input);
         console.info("Offset", offset);
         console.info("Annotations", annotations.annotations);
         expect(annotations.length()).toBe(input.length);
@@ -61,9 +65,9 @@ describe("markdown parsing", () => {
         expect(annotations.annotations[3]).toStrictEqual({ text: "world" });
     });
 
-    test("many escapes", async () => {
+    test("many escapes", () => {
         const input = `\\!\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\\`\\{\\|\\}\\~`;
-        const { offset, annotations } = await parseAndAnnotate(input, undefined);
+        const { offset, annotations } = parse(input);
         console.info("Offset", offset);
         console.info("Annotations", annotations.annotations);
         expect(annotations.length()).toBe(input.length);
@@ -75,13 +79,32 @@ describe("markdown parsing", () => {
     });
 });
 
+describe("isInside", () => {
+    test("detects table position", () => {
+        const tree = new SyntaxTree("text before\n\n| a | b |\n|---|---|\n| 1 | 2 |\n\ntext after");
+        // inside the table row
+        expect(tree.isInside(20, "table")).toBe(true);
+        // before the table
+        expect(tree.isInside(2, "table")).toBe(false);
+        // after the table
+        expect(tree.isInside(50, "table")).toBe(false);
+    });
+
+    test("nested node lookup", () => {
+        const tree = new SyntaxTree("Hello `code` world");
+        // inside the inlineCode
+        expect(tree.isInside(8, "inlineCode")).toBe(true);
+        expect(tree.isInside(2, "inlineCode")).toBe(false);
+    });
+});
+
 describe("markdown samples", () => {
     // iterate over all files in the samples directory
     const files = readdirSync("test");
     for (const file of files) {
-        test(`sample ${file}`, async () => {
+        test(`sample ${file}`, () => {
             const input = readFileSync(`test/${file}`, "utf-8");
-            const { offset, annotations } = await parseAndAnnotate(input, undefined);
+            const { offset, annotations } = parse(input);
             console.info(file, "Offset", offset);
             console.info(file, "Annotations", annotations.annotations);
             expect(annotations.length()).toBe(input.trimEnd().length);

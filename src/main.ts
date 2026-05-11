@@ -524,11 +524,13 @@ export default class LanguageToolPlugin extends Plugin {
 
         let matches: (api.LTMatch & { range: api.LTRange })[];
         let longNotice: Notice | undefined = undefined;
+        let syntax: markdown.SyntaxTree;
         try {
             this.setStatusBarWorking();
 
+            syntax = new markdown.SyntaxTree(text);
             // `annotations` is never reassigned; `offset` is mutated by `optimize()` below.
-            const { offset: initialOffset, annotations } = await markdown.parseAndAnnotate(text, range);
+            const { offset: initialOffset, annotations } = syntax.annotate(range);
             let offset = initialOffset;
             // reduce request size
             offset += annotations.optimize();
@@ -579,6 +581,14 @@ export default class LanguageToolPlugin extends Plugin {
                 if (match.range.to > editor.state.doc.length) continue;
                 // Ignore typos that are in the spellcheck dictionary
                 if (match.categoryId === "TYPOS" && spellcheckDictionary.includes(match.text))
+                    continue;
+                // Ignore whitespace lints inside markdown tables: the whitespace
+                // is column padding, and applying the lint breaks table layout.
+                if (
+                    match.categoryId === "WHITESPACE" &&
+                    (syntax.isInside(match.range.from, "table") ||
+                        syntax.isInside(match.range.to, "table"))
+                )
                     continue;
                 effects.push(addUnderline.of(match));
             }
