@@ -518,6 +518,10 @@ export default class LanguageToolPlugin extends Plugin {
 
         const text = editor.state.sliceDoc();
         if (!text.trim()) return false;
+        // Snapshot the immutable CodeMirror Text. We compare by reference
+        // after the await: any edit produces a new Text object, so an
+        // unchanged reference is an O(1) "doc didn't change" proof.
+        const snapshotDoc = editor.state.doc;
 
         let matches: (api.LTMatch & { range: api.LTRange })[];
         let longNotice: Notice | undefined = undefined;
@@ -549,6 +553,14 @@ export default class LanguageToolPlugin extends Plugin {
         } finally {
             this.setStatusBarReady();
             if (longNotice) longNotice.hide();
+        }
+
+        // Race-condition guard: if the immutable Text reference changed during
+        // the in-flight check, the document was edited and our match offsets
+        // are stale. The auto-check listener will schedule a fresh run.
+        if (editor.state.doc !== snapshotDoc) {
+            console.debug("Dropping stale check: document changed during request");
+            return false;
         }
 
         const effects: StateEffect<any>[] = [];
