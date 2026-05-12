@@ -98,6 +98,47 @@ describe("isInside", () => {
     });
 });
 
+describe("soft-break trailing whitespace", () => {
+    // Regression: mdast strips trailing whitespace from each line of a
+    // soft-broken paragraph. addLines used to mistake that length diff
+    // for a leading indent and strip the first character of the next
+    // line — making logical text "We" become "e", "However" become
+    // "owever", etc., which then triggered bogus "capitalise sentence
+    // start" matches from the LLM.
+    function logicalOf(src: string): string {
+        const ann = parse(src);
+        return ann.annotations.annotations
+            .map((a: { text?: string; markup?: string; interpretAs?: string }) =>
+                a.text !== undefined ? a.text : (a.interpretAs ?? ""))
+            .join("");
+    }
+
+    test("does not strip first char of next line (simple case)", () => {
+        // Trailing space before \n is the trigger.
+        const logical = logicalOf("First sentence. \nWe realised that.");
+        expect(logical).toContain("We realised");
+        expect(logical).not.toContain("\ne realised");
+    });
+
+    test("multiple soft breaks across multiple paragraphs", () => {
+        // Real-world Obsidian-style text: every line ends with a
+        // stray space, paragraphs separated by blank lines.
+        const src = [
+            "Last monday, me and my colleague was discussing the website. ",
+            "We realised that the design looked too gray. ",
+            "The team have decided to make several improvements.",
+            "",
+            "If I would have more time, I will check every page. ",
+            "However, the project manager said it must be finished by Friday.",
+        ].join("\n");
+        const logical = logicalOf(src);
+        expect(logical).toContain("We realised");
+        expect(logical).toContain("However,");
+        expect(logical).not.toContain("\ne realised");
+        expect(logical).not.toContain("\nowever,");
+    });
+});
+
 describe("markdown samples", () => {
     // iterate over all files in the samples directory
     const files = readdirSync("test");

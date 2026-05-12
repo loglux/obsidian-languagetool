@@ -251,7 +251,13 @@ function addLines(text: string, parsed: string, output: AnnotatedText) {
         const line = reminder[i];
         const pline = premider[i];
 
-        let indent = line.length - pline.length;
+        // mdast strips trailing whitespace from each line of a soft-broken
+        // paragraph (it has no semantic meaning). Account for that before
+        // computing indent, otherwise the trailing-space length difference
+        // would be mistaken for a leading indent and we would strip the
+        // first character of the next line.
+        const lineForIndent = line.replace(/[ \t]+$/, "");
+        let indent = lineForIndent.length - pline.length;
         for (const _ of line.matchAll(ESCAPE)) {
             indent -= 1; // each escape character is one longer
         }
