@@ -64,6 +64,22 @@ describe("markdown parsing", () => {
         expect(annotations.annotations[3]).toStrictEqual({ text: "world" });
     });
 
+    test("soft break with trailing whitespace keeps next line intact", () => {
+        // mdast strips trailing whitespace from each line of a soft-broken
+        // paragraph. addLines must not interpret that length diff as a
+        // leading indent, otherwise it would drop the first character of
+        // the next line — observed in the wild as "We" becoming "e",
+        // "However" becoming "owever", etc. (see #22).
+        let input = "First sentence. \nWe realised that.";
+        let syntax = new SyntaxTree(input);
+        let { annotations } = syntax.annotate(undefined);
+        let logical = annotations.annotations
+            .map(a => "text" in a ? a.text : (a.interpretAs ?? ""))
+            .join("");
+        expect(logical).toContain("We realised");
+        expect(logical).not.toContain("\ne realised");
+    });
+
     test("many escapes", () => {
         let input = `\\!\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\\`\\{\\|\\}\\~`;
         let syntax = new SyntaxTree(input);
